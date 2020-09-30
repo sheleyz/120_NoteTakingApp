@@ -1,23 +1,26 @@
 var notes = [
   {
-    text: "Top Secret Documents",
+    title: "Bank Info",
+    text: "My account PIN is 1234",
     importance: 5
   },
   {
-    text: "My favorite pizza is deep dish",
+    title: "Pizza",
+    text: "My favorite pizza is deep dish pepperoni",
     importance: 2
   },
   {
-    text: "Call Bob at 3:00",
+    title: "Taco Recipe",
+    text: "Tacos require meat, cheese, and lots of veggies",
     importance: 2
   }
 ];
 
 function app() {
-  var pages = ["home", "addNotes", "displayNotes"];
+  var pages = ["Home", "New Note", "My Notes"];
   init();
   nav(pages);
-  renderPage("home");
+  renderPage("Home");
 }
 
 function init() {
@@ -34,7 +37,7 @@ function nav(list) {
     const button = document.createElement("button");
     const val = list[i];
     button.innerHTML = list[i];
-    button.addEventListener("click", function() {
+    button.addEventListener("click", function () {
       renderPage(val);
     });
     document.body.querySelector(".nav").appendChild(button);
@@ -42,32 +45,39 @@ function nav(list) {
 }
 
 function renderPage(page) {
-  if (page === "home") {
+  if (page === "Home") {
     home();
-  } else if (page === "addNotes") {
+  } else if (page === "New Note") {
     addNotes();
-  } else if (page === "displayNotes") {
+  } else if (page === "My Notes") {
     displayNotes();
   }
 }
 
 function home() {
   var wrapper = document.querySelector(".wrapper");
-  wrapper.innerHTML = "Home";
+  wrapper.innerHTML = "Welcome to Notes! To add a new note or see the notes you have already created, click on the respective buttons above.";
 }
 
 function addNotes() {
   var wrapper = document.querySelector(".wrapper");
   wrapper.innerHTML = "";
 
-  //Input Text
+  // Input Title
+  var inputTitleEle = document.createElement("input");
+  document.body.querySelector(".wrapper").appendChild(inputTitleEle);
+  inputTitleEle.setAttribute("id", "inputTitle");
+  inputTitleEle.setAttribute("placeholder", "Title");
+  var inputTitle = document.getElementById("inputTitle");
+  
+  // Input Text
   var inputTextEle = document.createElement("input");
   document.body.querySelector(".wrapper").appendChild(inputTextEle);
   inputTextEle.setAttribute("id", "inputText");
   inputTextEle.setAttribute("placeholder", "Text");
   var inputText = document.getElementById("inputText");
 
-  //Input Importance
+  // Input Importance
   var inputImpEle = document.createElement("input");
   document.body.querySelector(".wrapper").appendChild(inputImpEle);
   inputImpEle.setAttribute("id", "inputImportance");
@@ -75,32 +85,36 @@ function addNotes() {
   inputImpEle.setAttribute("type", "number");
   var inputImportance = document.getElementById("inputImportance");
 
-  //Submit Note Button
+  // Create Submit Note Button
   var submitNoteEle = document.createElement("div");
   submitNoteEle.innerHTML = "Submit Note";
   document.body.querySelector(".wrapper").appendChild(submitNoteEle);
   submitNoteEle.setAttribute("class", "submitButton");
 
-  //Click Submit Note Button
+  // Click Submit Note Button
   var noteErrorEle = document.createElement("div");
   noteErrorEle.setAttribute("class", "noteError");
+  noteErrorEle.style.color = "red";
   document.body
     .querySelector(".submitButton")
-    .addEventListener("click", function() {
-      if (inputValue(inputText) && inputValue(inputImportance)) {
+    .addEventListener("click", function () {
+      if (inputValue(inputTitle) && inputValue(inputText) && inputValue(inputImportance)) {
         submitNote();
         noteErrorEle.innerHTML = "Note added successfully";
         document.body.querySelector(".wrapper").appendChild(noteErrorEle);
+        renderPage("My Notes");
       } else {
-        if (!inputValue(inputText) && inputValue(inputImportance)) {
-          noteErrorEle.innerHTML = "You didn't type in any text";
+        if (!inputValue(inputTitle) && inputValue(inputText) && inputValue(inputImportance)) {
+          noteErrorEle.innerHTML = "Please enter a title for your note";
           document.body.querySelector(".wrapper").appendChild(noteErrorEle);
-        } else if (inputValue(inputText) && !inputValue(inputImportance)) {
-          noteErrorEle.innerHTML =
-            "You didn't type in a valid importance value";
+        } else if (inputValue(inputTitle) && !inputValue(inputText) && inputValue(inputImportance)) {
+          noteErrorEle.innerHTML = "Please enter text for your note";
+          document.body.querySelector(".wrapper").appendChild(noteErrorEle);
+        } else if (inputValue(inputTitle) && inputValue(inputText) && !inputValue(inputImportance)) {
+          noteErrorEle.innerHTML = "Please enter a valid importance value for your note";
           document.body.querySelector(".wrapper").appendChild(noteErrorEle);
         } else {
-          noteErrorEle.innerHTML = "You didn't type anything valid";
+          noteErrorEle.innerHTML = "Please enter a title, text, and importance value for your note";
           document.body.querySelector(".wrapper").appendChild(noteErrorEle);
         }
       }
@@ -108,6 +122,7 @@ function addNotes() {
 
   function submitNote() {
     var obj = {
+      title: inputTitle.value,
       text: inputText.value,
       importance: inputImportance.value
     };
@@ -125,7 +140,7 @@ function addNotes() {
 
 function displayNotes() {
   var wrapper = document.querySelector(".wrapper");
-  wrapper.innerHTML = "Notes";
+  wrapper.innerHTML = "My Notes";
 
   var sortBy = [
     {
@@ -133,12 +148,12 @@ function displayNotes() {
       direction: -1
     },
     {
-      prop: "text",
+      prop: "title",
       direction: 1
     }
   ];
 
-  notes.sort(function(a, b) {
+  notes.sort(function (a, b) {
     let i = 0,
       result = 0;
     while (i < sortBy.length && result === 0) {
@@ -147,17 +162,20 @@ function displayNotes() {
         (a[sortBy[i].prop].toString() < b[sortBy[i].prop].toString()
           ? -1
           : a[sortBy[i].prop].toString() > b[sortBy[i].prop].toString()
-            ? 1
-            : 0);
+          ? 1
+          : 0);
       i++;
     }
     return result;
   });
 
   for (var i = 0; i < notes.length; i++) {
-    var ele = document.createElement("div");
-    ele.innerHTML = notes[i].text;
-    document.body.querySelector(".wrapper").appendChild(ele);
+    var titleEle = document.createElement("h4");
+    var textEle = document.createElement("div");
+    titleEle.innerHTML = notes[i].title;
+    textEle.innerHTML = notes[i].text;
+    document.body.querySelector(".wrapper").appendChild(titleEle);
+    document.body.querySelector(".wrapper").appendChild(textEle);
   }
 }
 
@@ -169,14 +187,14 @@ function loginPage() {
   var wrapper2 = document.querySelector(".wrapper2");
   wrapper2.innerHTML = "";
 
-  //Input Name
-  var inputNameEle = document.createElement("input");
-  document.body.querySelector(".wrapper2").appendChild(inputNameEle);
-  inputNameEle.setAttribute("id", "inputName");
-  inputNameEle.setAttribute("placeholder", "Name");
-  var inputName = document.getElementById("inputName");
+  // Input Username
+  var inputUsernameEle = document.createElement("input");
+  document.body.querySelector(".wrapper2").appendChild(inputUsernameEle);
+  inputUsernameEle.setAttribute("id", "inputUsername");
+  inputUsernameEle.setAttribute("placeholder", "Username");
+  var inputUserame = document.getElementById("inputUsername");
 
-  //Input Password
+  // Input Password
   var inputPassEle = document.createElement("input");
   document.body.querySelector(".wrapper2").appendChild(inputPassEle);
   inputPassEle.setAttribute("id", "inputPass");
@@ -184,33 +202,47 @@ function loginPage() {
   inputPassEle.setAttribute("type", "password");
   var inputPass = document.getElementById("inputPass");
 
-  //Login Button
+  // Create Login Button
   var loginEle = document.createElement("div");
   loginEle.innerHTML = "Log In";
   document.body.querySelector(".wrapper2").appendChild(loginEle);
   loginEle.setAttribute("class", "loginButton");
 
-  //Click Login Button
+  // Click Login Button
   var loginErrorEle = document.createElement("div");
   loginErrorEle.setAttribute("class", "loginError");
+  loginErrorEle.style.color = "red";
   document.body
     .querySelector(".loginButton")
-    .addEventListener("click", function() {
-      if (inputVal(inputName) && inputVal(inputPass)) {
+    .addEventListener("click", function () {
+      if (inputVal(inputUserame) && inputVal(inputPass)) {
         document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
-        submitLogin();
+         if (inputCor(inputUserame) && inputCor(inputPass)) {
+          submitLogin();
+        } else {
+          if (!inputCor(inputUserame) && inputCor(inputPass)) {
+            loginErrorEle.innerHTML = "Your username is incorrect";
+            document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
+          } else if (inputCor(inputUserame) && !inputCor(inputPass)) {
+            loginErrorEle.innerHTML = "Your password is incorrect";
+            document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
+          } else {
+            loginErrorEle.innerHTML =
+              "Your username and password are incorrect";
+            document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
+          }
+        }
+        
         if (login1 == true) {
-          inputNameEle.style.display = "none";
-          inputPassEle.style.display = "none";
           loginErrorEle.innerHTML = "";
-          loginEle.style.display = "none";
+          wrapper2.style.display = "none";
           app();
         }
       } else {
-        if (!inputVal(inputName) && inputVal(inputPass)) {
+        if (!inputVal(inputUserame) && inputVal(inputPass)) {
           loginErrorEle.innerHTML = "You didn't type in your name";
           document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
-        } else if (inputVal(inputName) && !inputVal(inputPass)) {
+        } else if (inputVal(inputUserame) && !inputVal(inputPass)) {
           loginErrorEle.innerHTML = "You didn't type in your password";
           document.body.querySelector(".wrapper2").appendChild(loginErrorEle);
         } else {
@@ -220,11 +252,11 @@ function loginPage() {
       }
     });
 
-  //loginList not displayed, simply kept as a "record of logins"
+  // loginList not displayed, simply kept as a "record of logins"
   var loginList = [];
   function submitLogin() {
     var obj = {
-      name: inputName.value,
+      name: inputUserame.value,
       pass: inputPass.value
     };
     loginList.push(obj);
@@ -234,6 +266,13 @@ function loginPage() {
 
   function inputVal(ele) {
     if (ele.value !== "") {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  function inputCor(ele) {
+    if (ele.value === "johnnyappleseed" || ele.value === "app1eCider") {
       return true;
     } else {
       return false;
